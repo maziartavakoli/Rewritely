@@ -1,15 +1,15 @@
 {
   "manifest_version": 3,
   "name": "BegooMagoo",
-  "version": "1.0",
-  "description": "Your AI companion for translating text with the perfect tone.",
+  "version": "3.1",
+  "description": "Translate or Reply to any text using AI.",
   "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": [
     "https://api.gapgpt.app/*"
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Open BegooMagoo",
+    "default_title": "BegooMagoo",
     "default_icon": "icon.png"
   },
   "icons": {

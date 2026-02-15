@@ -2,43 +2,49 @@
 <html>
 <head>
   <style>
-    body { width: 340px; padding: 20px; font-family: 'Segoe UI', sans-serif; font-size: 14px; background-color: #fafafa; }
+    body { width: 360px; padding: 20px; font-family: 'Segoe UI', sans-serif; font-size: 14px; background-color: #f8f9fa; }
     
-    /* Branding Header */
-    h3 { margin-top: 0; color: #2c3e50; text-align: center; font-size: 22px; letter-spacing: 1px; margin-bottom: 5px; }
-    .subtitle { text-align: center; color: #7f8c8d; font-size: 12px; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;}
+    h3 { margin-top: 0; color: #2c3e50; text-align: center; font-size: 22px; margin-bottom: 5px; }
+    .subtitle { text-align: center; color: #7f8c8d; font-size: 12px; margin-bottom: 20px; border-bottom: 1px solid #e9ecef; padding-bottom: 15px;}
     
-    label { font-weight: 600; display: block; margin-top: 10px; font-size: 12px; color: #34495e; }
-    select { width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px; border: 1px solid #bdc3c7; background: white; }
+    label { font-weight: 700; display: block; margin-top: 10px; font-size: 12px; color: #34495e; }
+    select { width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px; border: 1px solid #ced4da; background: white; }
+    
+    /* Two Buttons Side by Side */
+    .button-row { display: flex; gap: 10px; margin-top: 20px; }
     
     button { 
-      width: 100%; padding: 12px; margin-top: 20px; 
-      background-color: #e67e22; /* A nice BegooMagoo Orange */
+      flex: 1; padding: 12px; 
       color: white; border: none; 
-      border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px;
-      transition: background 0.2s;
+      border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px;
+      transition: opacity 0.2s;
     }
-    button:hover { background-color: #d35400; }
-    button:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+    button:hover { opacity: 0.9; }
+    button:disabled { background-color: #bdc3c7 !important; cursor: not-allowed; }
 
-    #result { 
+    #translateBtn { background-color: #e67e22; } /* Orange */
+    #replyBtn { background-color: #27ae60; }     /* Green */
+
+    /* EDITABLE Result Box */
+    textarea#result { 
+      width: 100%; box-sizing: border-box;
       background: white; padding: 15px; margin-top: 20px; 
-      border-left: 5px solid #e67e22; border-radius: 4px;
-      min-height: 60px; line-height: 1.6; white-space: pre-wrap;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-      color: #2c3e50;
+      border: 1px solid #ced4da; border-left: 5px solid #34495e; border-radius: 4px;
+      min-height: 120px; line-height: 1.5; font-family: inherit; resize: vertical;
+      outline: none;
     }
+    textarea#result:focus { border-color: #2c3e50; }
     
-    .error { border-left-color: #e74c3c !important; color: #c0392b; background: #fdedec !important; }
+    .error { border-left-color: #e74c3c !important; color: #c0392b; }
   </style>
 </head>
 <body>
   <h3>BegooMagoo</h3>
-  <div class="subtitle">Translate anything, any way you want.</div>
+  <div class="subtitle">Your AI Communication Assistant</div>
   
   <div style="display: flex; gap: 10px;">
     <div style="flex: 1;">
-      <label for="targetLang">Target Language:</label>
+      <label for="targetLang">Language:</label>
       <select id="targetLang">
         <option value="Persian">Persian (Farsi)</option>
         <option value="English">English</option>
@@ -46,10 +52,7 @@
         <option value="French">French</option>
         <option value="Spanish">Spanish</option>
         <option value="Arabic">Arabic</option>
-        <option value="Turkish">Turkish</option>
         <option value="Russian">Russian</option>
-        <option value="Japanese">Japanese</option>
-        <option value="Korean">Korean</option>
       </select>
     </div>
     <div style="flex: 1;">
@@ -57,18 +60,20 @@
       <select id="tone">
         <option value="Standard">Standard</option>
         <option value="Formal Business">Formal (Work)</option>
-        <option value="Friendly and Casual">Friendly</option>
-        <option value="Very Simple (ELI5)">Simple</option>
-        <option value="Sarcastic and Funny">Sarcastic</option>
-        <option value="Poetic">Poetic</option>
+        <option value="Friendly">Friendly</option>
+        <option value="Sarcastic">Sarcastic</option>
         <option value="Angry">Angry</option>
       </select>
     </div>
   </div>
 
-  <button id="translateBtn">Begoo!</button>
+  <div class="button-row">
+    <button id="translateBtn">Translate</button>
+    <button id="replyBtn">Generate Reply</button>
+  </div>
 
-  <div id="result">Highlight text on a page and click Begoo!</div>
+  <!-- Editable Text Area -->
+  <textarea id="result" placeholder="Highlight text on a page, then choose: Translate it OR Reply to it."></textarea>
 
   <script src="popup.js"></script>
 </body>
