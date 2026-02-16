@@ -1,0 +1,108 @@
+/* Rewritely Floating Action Button & UI */
+
+#bgm-floating-btn {
+  position: absolute;
+  z-index: 2147483647;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #6c5ce7;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 12px rgba(108, 92, 231, 0.4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  pointer-events: none;
+  padding: 0;
+}
+
+#bgm-floating-btn.bgm-visible {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+#bgm-floating-btn:hover {
+  background: #5b4cdb;
+  transform: scale(1.1);
+  box-shadow: 0 4px 16px rgba(108, 92, 231, 0.5);
+}
+
+#bgm-floating-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: white;
+}
+
+/* Loading state */
+#bgm-floating-btn.bgm-loading {
+  pointer-events: none;
+  animation: bgm-pulse 1s ease-in-out infinite;
+  background: #e17055;
+}
+
+@keyframes bgm-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.7; }
+}
+
+/* Prompt selector dropdown */
+#bgm-prompt-selector {
+  position: absolute;
+  z-index: 2147483647;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  padding: 6px 0;
+  min-width: 220px;
+  max-width: 320px;
+  opacity: 0;
+  transform: translateY(-4px) scale(0.95);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  pointer-events: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+#bgm-prompt-selector.bgm-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+#bgm-prompt-selector .bgm-prompt-item {
+  display: block;
+  width: 100%;
+  padding: 9px 16px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 13px;
+  color: #2d3436;
+  cursor: pointer;
+  line-height: 1.3;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+#bgm-prompt-selector .bgm-prompt-item:hover {
+  background: #f0edff;
+}
+
+#bgm-prompt-selector .bgm-prompt-item.bgm-default {
+  font-weight: 600;
+  color: #6c5ce7;
+}
+
+#bgm-prompt-selector .bgm-prompt-item.bgm-default::before {
+  content: '★ ';
+}
+
+#bgm-prompt-selector .bgm-divider {
+  height: 1px;
+  background: #eee;
+  margin: 4px 0;
+}
