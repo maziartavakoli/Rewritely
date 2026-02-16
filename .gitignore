@@ -1,0 +1,12 @@
+# IDE
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+
+# Build
+*.zip

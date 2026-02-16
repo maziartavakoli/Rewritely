@@ -1,80 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <style>
-    body { width: 360px; padding: 20px; font-family: 'Segoe UI', sans-serif; font-size: 14px; background-color: #f8f9fa; }
-    
-    h3 { margin-top: 0; color: #2c3e50; text-align: center; font-size: 22px; margin-bottom: 5px; }
-    .subtitle { text-align: center; color: #7f8c8d; font-size: 12px; margin-bottom: 20px; border-bottom: 1px solid #e9ecef; padding-bottom: 15px;}
-    
-    label { font-weight: 700; display: block; margin-top: 10px; font-size: 12px; color: #34495e; }
-    select { width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px; border: 1px solid #ced4da; background: white; }
-    
-    /* Two Buttons Side by Side */
-    .button-row { display: flex; gap: 10px; margin-top: 20px; }
-    
-    button { 
-      flex: 1; padding: 12px; 
-      color: white; border: none; 
-      border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px;
-      transition: opacity 0.2s;
-    }
-    button:hover { opacity: 0.9; }
-    button:disabled { background-color: #bdc3c7 !important; cursor: not-allowed; }
-
-    #translateBtn { background-color: #e67e22; } /* Orange */
-    #replyBtn { background-color: #27ae60; }     /* Green */
-
-    /* EDITABLE Result Box */
-    textarea#result { 
-      width: 100%; box-sizing: border-box;
-      background: white; padding: 15px; margin-top: 20px; 
-      border: 1px solid #ced4da; border-left: 5px solid #34495e; border-radius: 4px;
-      min-height: 120px; line-height: 1.5; font-family: inherit; resize: vertical;
-      outline: none;
-    }
-    textarea#result:focus { border-color: #2c3e50; }
-    
-    .error { border-left-color: #e74c3c !important; color: #c0392b; }
-  </style>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <h3>BegooMagoo</h3>
-  <div class="subtitle">Your AI Communication Assistant</div>
-  
-  <div style="display: flex; gap: 10px;">
-    <div style="flex: 1;">
-      <label for="targetLang">Language:</label>
-      <select id="targetLang">
-        <option value="Persian">Persian (Farsi)</option>
-        <option value="English">English</option>
-        <option value="German">German</option>
-        <option value="French">French</option>
-        <option value="Spanish">Spanish</option>
-        <option value="Arabic">Arabic</option>
-        <option value="Russian">Russian</option>
-      </select>
-    </div>
-    <div style="flex: 1;">
-      <label for="tone">Tone:</label>
-      <select id="tone">
-        <option value="Standard">Standard</option>
-        <option value="Formal Business">Formal (Work)</option>
-        <option value="Friendly">Friendly</option>
-        <option value="Sarcastic">Sarcastic</option>
-        <option value="Angry">Angry</option>
-      </select>
-    </div>
+  <!-- Header -->
+  <div class="header">
+    <h1>Rewritely</h1>
+    <div class="subtitle">AI Writing Assistant</div>
   </div>
 
-  <div class="button-row">
-    <button id="translateBtn">Translate</button>
-    <button id="replyBtn">Generate Reply</button>
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-tab="prompts">Prompts</button>
+    <button class="tab" data-tab="api">API Settings</button>
   </div>
 
-  <!-- Editable Text Area -->
-  <textarea id="result" placeholder="Highlight text on a page, then choose: Translate it OR Reply to it."></textarea>
+  <!-- Prompts Section -->
+  <div class="section active" id="section-prompts">
+    <div class="flex-between">
+      <label style="margin:0">Your Prompts</label>
+      <button class="btn btn-primary btn-sm" id="btn-add-prompt">+ New</button>
+    </div>
 
+    <!-- Prompt Editor (hidden by default) -->
+    <div class="prompt-editor" id="prompt-editor">
+      <label>Title</label>
+      <input type="text" id="editor-title" placeholder="e.g. Fix Grammar – Professional">
+      <label>System Prompt</label>
+      <textarea id="editor-system" placeholder="You are a professional editor..."></textarea>
+      <div class="prompt-editor-actions">
+        <button class="btn btn-success btn-sm" id="btn-save-prompt">Save</button>
+        <button class="btn btn-ghost btn-sm" id="btn-cancel-prompt">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Prompt List -->
+    <div class="prompt-list" id="prompt-list"></div>
+  </div>
+
+  <!-- API Settings Section -->
+  <div class="section" id="section-api">
+    <label>Base URL</label>
+    <input type="url" id="api-base-url" placeholder="https://api.openai.com/v1">
+
+    <label>API Key</label>
+    <input type="password" id="api-key" placeholder="sk-...">
+
+    <label>Model</label>
+    <input type="text" id="api-model" placeholder="gpt-4o-mini">
+
+    <div class="mt-12">
+      <button class="btn btn-primary btn-block" id="btn-save-api">Save Settings</button>
+    </div>
+    <div id="api-status"></div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    Select text in any input field &middot; Click the floating icon to rewrite &middot; Alt+R shortcut
+  </div>
+
+  <script src="lib/storage.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
