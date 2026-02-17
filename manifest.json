@@ -1,20 +1,42 @@
 {
   "manifest_version": 3,
-  "name": "BegooMagoo",
-  "version": "3.1",
-  "description": "Translate or Reply to any text using AI.",
-  "permissions": ["activeTab", "scripting", "storage"],
-  "host_permissions": [
-    "https://api.gapgpt.app/*"
+  "name": "Rewritely",
+  "version": "4.0",
+  "description": "AI-powered writing assistant — fix grammar, rewrite text, and transform your writing directly in any input field.",
+  "permissions": ["activeTab", "storage", "contextMenus"],
+  "host_permissions": ["https://*/*", "http://*/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["lib/storage.js", "content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "BegooMagoo",
-    "default_icon": "icon.png"
+    "default_title": "Rewritely",
+    "default_icon": {
+      "16": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
+    }
   },
   "icons": {
     "16": "icon.png",
     "48": "icon.png",
     "128": "icon.png"
+  },
+  "commands": {
+    "trigger-rewrite": {
+      "suggested_key": {
+        "default": "Alt+R",
+        "mac": "Alt+R"
+      },
+      "description": "Rewrite selected text with AI"
+    }
   }
 }
