@@ -9,13 +9,22 @@
 (() => {
   'use strict';
 
-  const browserAPI = (typeof browser !== 'undefined') ? browser : chrome;
+  // Safely get browser API — works in Chrome, Firefox, and edge cases where context invalidated
+  const browserAPI = (() => {
+    try {
+      if (typeof browser !== 'undefined' && browser?.runtime) return browser;
+      if (typeof chrome !== 'undefined' && chrome?.runtime) return chrome;
+    } catch(_) {}
+    return null;
+  })();
+
+  if (!browserAPI) return; // Extension context not available, exit silently
 
   // ── Extension context check ──
 
   function isContextValid() {
     try {
-      return !!browserAPI.runtime?.id;
+      return !!(browserAPI && browserAPI.runtime && browserAPI.runtime.id);
     } catch (_) {
       return false;
     }
@@ -73,6 +82,7 @@
   // ── State ──
   let activeElement = null;
   let selectedText = '';
+  let pendingQuickPrompt = null;
   let selectionStart = 0;
   let selectionEnd = 0;
   let savedRange = null; // preserved Selection range for contenteditable
@@ -205,7 +215,7 @@
         const range = sel.getRangeAt(0);
         const rect = range.getBoundingClientRect();
         if (rect.width > 0 || rect.height > 0) {
-          return { top: rect.top + window.scrollY, left: rect.right + window.scrollX };
+          return { top: rect.bottom + 8, left: rect.right - 16 };
         }
       }
       // Fallback: use element position
@@ -243,12 +253,12 @@
       document.body.removeChild(mirror);
 
       return {
-        top: rect.top + window.scrollY + Math.min(spanRect.top - mirrorRect.top, rect.height - 10),
-        left: rect.left + window.scrollX + Math.min(spanRect.left - mirrorRect.left + 10, rect.width),
+        top: rect.top + Math.min(spanRect.top - mirrorRect.top, rect.height - 10) + 8,
+        left: rect.left + Math.min(spanRect.left - mirrorRect.left + 10, rect.width),
       };
     }
 
-    return { top: rect.top + window.scrollY, left: rect.right + window.scrollX };
+    return { top: rect.bottom + 8, left: rect.right - 16 };
   }
 
   // ── Floating Button ──
@@ -282,9 +292,10 @@
 
   function showFloatingBtn(coords) {
     const btn = createFloatingBtn();
-    // Clamp within viewport
-    const top = Math.max(4, coords.top - 40);
-    const left = Math.min(coords.left + 8, window.innerWidth + window.scrollX - 44);
+    // coords may include scrollY (from getCaretCoords), convert to viewport for fixed positioning
+    const viewTop  = coords.top  - (coords.hasScroll ? 0 : 0);
+    const top  = Math.max(4, Math.min(viewTop,  window.innerHeight - 44));
+    const left = Math.max(4, Math.min(coords.left, window.innerWidth  - 44));
     btn.style.top = `${top}px`;
     btn.style.left = `${left}px`;
     btn.classList.remove('bgm-loading');
@@ -370,13 +381,87 @@
       });
     }
 
-    if (floatingBtn) {
-      const btnRect = floatingBtn.getBoundingClientRect();
-      selector.style.top = `${btnRect.bottom + window.scrollY + 4}px`;
-      selector.style.left = `${btnRect.left + window.scrollX}px`;
+    // ── Custom prompt input row ──
+    const divider = document.createElement('div');
+    divider.className = 'bgm-divider';
+    selector.appendChild(divider);
+
+    const customRow = document.createElement('div');
+    customRow.style.cssText = 'display:flex;align-items:center;gap:6px;padding:6px 8px;';
+
+    const customInput = document.createElement('input');
+    customInput.type = 'text';
+    customInput.placeholder = 'Custom instruction…';
+    customInput.style.cssText = [
+      'flex:1', 'padding:6px 10px', 'border:1.5px solid #d1c4f7',
+      'border-radius:6px', 'font-size:12px',
+      "font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",
+      'color:#2d3436', 'background:#f8f6ff', 'outline:none',
+      'box-sizing:border-box', 'min-width:0',
+    ].join(';');
+    customInput.addEventListener('mousedown', e => { e.stopImmediatePropagation(); });
+    customInput.addEventListener('keydown', e => {
+      e.stopPropagation();
+      if (e.key === 'Enter') { e.preventDefault(); runCustom(); }
+    });
+
+    const runBtn = document.createElement('button');
+    runBtn.textContent = '↵';
+    runBtn.style.cssText = [
+      'width:28px', 'height:28px', 'background:#6c5ce7', 'color:#fff',
+      'border:none', 'border-radius:6px', 'font-size:14px', 'cursor:pointer',
+      'display:flex', 'align-items:center', 'justify-content:center',
+      'flex-shrink:0', "font-family:inherit", 'padding:0', 'box-sizing:border-box',
+    ].join(';');
+    runBtn.addEventListener('mousedown', e => e.preventDefault());
+    runBtn.addEventListener('click', runCustom);
+
+    function runCustom() {
+      const instruction = customInput.value.trim();
+      if (!instruction) return;
+      hidePromptSelector();
+      // Flash button red then hide
+      if (floatingBtn) {
+        floatingBtn.classList.add('bgm-loading');
+        floatingBtn.classList.remove('bgm-visible');
+        setTimeout(() => { if (floatingBtn) { floatingBtn.classList.remove('bgm-loading'); } }, 600);
+      }
+      // Use pendingQuickPrompt path
+      pendingQuickPrompt = instruction;
+      startRewrite(null);
     }
 
-    requestAnimationFrame(() => selector.classList.add('bgm-visible'));
+    customRow.appendChild(customInput);
+    customRow.appendChild(runBtn);
+    selector.appendChild(customRow);
+
+    if (floatingBtn) {
+      const btnRect  = floatingBtn.getBoundingClientRect();
+      const menuW    = 380;
+      const spaceBelow = window.innerHeight - btnRect.bottom - 8;
+      const spaceAbove = btnRect.top - 8;
+
+      // Flip upward if not enough space below (e.g. near bottom of screen)
+      let sTop;
+      if (spaceBelow >= 200 || spaceBelow >= spaceAbove) {
+        sTop = btnRect.bottom + 4; // open below button
+      } else {
+        sTop = Math.max(4, btnRect.top - 320); // open above button
+      }
+
+      // Align with button left, clamp to viewport
+      const sLeft = Math.min(Math.max(4, btnRect.left - 4), window.innerWidth - menuW - 8);
+
+      selector.style.top       = sTop + 'px';
+      selector.style.left      = sLeft + 'px';
+      selector.style.maxHeight = Math.min(420, window.innerHeight - 16) + 'px';
+      selector.style.overflowY = 'auto';
+    }
+
+    requestAnimationFrame(() => {
+      selector.classList.add('bgm-visible');
+      setTimeout(() => customInput.focus(), 80);
+    });
   }
 
   // ── Click handler ──
@@ -389,17 +474,18 @@
   // ── Rewrite / Streaming ──
 
   function startRewrite(promptId) {
-    if (isStreaming || !activeElement || !selectedText) return;
+    if (isStreaming || !selectedText) return;
     if (contextDead || !isContextValid()) { handleInvalidContext(); return; }
 
     isStreaming = true;
     if (floatingBtn) floatingBtn.classList.add('bgm-loading');
 
-    // Restore selection before modifying (may have been lost to button click)
-    restoreSelection(activeElement);
-
-    // Clear the selected portion
-    deleteSelectedContent(activeElement);
+    if (activeElement) {
+      // Restore selection before modifying (may have been lost to button click)
+      restoreSelection(activeElement);
+      // Clear the selected portion
+      deleteSelectedContent(activeElement);
+    }
 
     // Open port to background for streaming
     let port;
@@ -418,7 +504,11 @@
           break;
 
         case 'stream_token':
-          insertToken(activeElement, msg.token);
+          if (activeElement) {
+            insertToken(activeElement, msg.token);
+          } else {
+            appendResultToast(msg.token);
+          }
           break;
 
         case 'stream_end':
@@ -435,11 +525,13 @@
       if (isStreaming) finishRewrite();
     });
 
-    currentPort.postMessage({
-      type: 'rewrite',
-      text: selectedText,
-      promptId,
-    });
+    if (pendingQuickPrompt) {
+      const qp = pendingQuickPrompt;
+      pendingQuickPrompt = null;
+      currentPort.postMessage({ type: 'rewrite_quick', text: selectedText, systemPrompt: qp });
+    } else {
+      currentPort.postMessage({ type: 'rewrite', text: selectedText, promptId });
+    }
   }
 
   /**
@@ -508,11 +600,81 @@
     el.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
+  // Toast for non-editable text results
+  let resultToast = null;
+  let resultToastText = '';
+
+  function appendResultToast(token) {
+    resultToastText += token;
+
+    if (!resultToast) {
+      resultToast = document.createElement('div');
+      resultToast.setAttribute('data-rwly-toast', '1');
+      Object.assign(resultToast.style, {
+        position: 'fixed',
+        bottom: '24px',
+        right: '24px',
+        zIndex: '2147483647',
+        background: '#1e293b',
+        color: 'white',
+        borderRadius: '12px',
+        padding: '14px 16px',
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        fontSize: '13px',
+        lineHeight: '1.6',
+        maxWidth: '380px',
+        maxHeight: '240px',
+        overflowY: 'auto',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+        whiteSpace: 'pre-wrap',
+      });
+
+      const textDiv = document.createElement('div');
+      textDiv.setAttribute('data-rwly-text', '1');
+      resultToast.appendChild(textDiv);
+
+      const copyBtn = document.createElement('button');
+      Object.assign(copyBtn.style, {
+        display: 'block', marginTop: '10px', padding: '5px 14px',
+        background: '#6c5ce7', color: 'white', border: 'none',
+        borderRadius: '6px', fontSize: '12px', fontWeight: '600',
+        cursor: 'pointer', fontFamily: 'inherit',
+      });
+      copyBtn.textContent = 'Copy';
+      copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(resultToastText).then(() => {
+          copyBtn.textContent = '✓ Copied!';
+          setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+        });
+      });
+      resultToast.appendChild(copyBtn);
+      document.documentElement.appendChild(resultToast);
+
+      setTimeout(() => {
+        document.addEventListener('mousedown', function onDown(e) {
+          if (resultToast && !resultToast.contains(e.target)) {
+            resultToast.remove(); resultToast = null; resultToastText = '';
+            document.removeEventListener('mousedown', onDown);
+          }
+        });
+      }, 500);
+    }
+
+    const textDiv = resultToast.querySelector('[data-rwly-text]');
+    if (textDiv) { textDiv.textContent = resultToastText; resultToast.scrollTop = resultToast.scrollHeight; }
+  }
+
   function finishRewrite() {
     isStreaming = false;
     currentPort = null;
     nativeInsertPos = 0;
     savedRange = null;
+    resultToastText = '';
+    resultToast = null;
+    // Reset button back to purple and hide it cleanly
+    if (floatingBtn) {
+      floatingBtn.classList.remove('bgm-loading', 'bgm-selected', 'bgm-visible');
+    }
     hideFloatingBtn();
   }
 
@@ -530,24 +692,44 @@
     if (isStreaming || contextDead) return;
     if (!isContextValid()) { handleInvalidContext(); return; }
 
+    // Try editable element first
     const el = resolveEditableElement(eventTarget);
-    if (!el || !isEditableElement(el)) {
+    const editableText = (el && isEditableElement(el)) ? getSelectedText(el) : '';
+
+    // Also check window selection (works everywhere — textboxes + normal page text)
+    const winSel = window.getSelection();
+    const winText = winSel ? winSel.toString().trim() : '';
+
+    const text = editableText || winText;
+
+    if (!text || text.length === 0) {
       hideFloatingBtn();
       return;
     }
 
-    const text = getSelectedText(el);
-    if (!text || text.trim().length === 0) {
-      hideFloatingBtn();
-      return;
-    }
-
-    activeElement = el;
     selectedText = text;
-    saveSelection(el);
 
-    const coords = getCaretCoords(el);
-    showFloatingBtn(coords);
+    if (el && isEditableElement(el) && editableText) {
+      // Inside an editable field — save selection so we can inject the result
+      activeElement = el;
+      saveSelection(el);
+      const coords = getCaretCoords(el);
+      showFloatingBtn(coords);
+    } else {
+      // Normal page text — show button at end of selection rectangle
+      activeElement = null;
+      if (winSel && winSel.rangeCount > 0) {
+        const rect = winSel.getRangeAt(0).getBoundingClientRect();
+        if (rect.width > 0 || rect.height > 0) {
+          showFloatingBtn({
+            top:  rect.bottom + 6,
+            left: rect.right  - 16,
+          });
+          return;
+        }
+      }
+      showFloatingBtn({ top: 80, left: window.innerWidth - 60 });
+    }
   }
 
   // Debounce selection checks
@@ -566,7 +748,13 @@
   }, true); // ← capture
 
   document.addEventListener('keyup', (e) => {
-    if (e.shiftKey || e.key === 'Shift') {
+    // Trigger on Shift-select AND on any key inside an editable element
+    const inEditable = e.target && (
+      e.target.tagName === 'TEXTAREA' ||
+      (e.target.tagName === 'INPUT') ||
+      e.target.isContentEditable
+    );
+    if (e.shiftKey || e.key === 'Shift' || inEditable) {
       debouncedSelectionCheck(e.target);
     }
   }, true); // ← capture

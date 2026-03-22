@@ -2,17 +2,32 @@
   "manifest_version": 3,
   "name": "Rewritely",
   "version": "4.0",
-  "description": "AI-powered writing assistant — fix grammar, rewrite text, and transform your writing directly in any input field.",
-  "permissions": ["activeTab", "storage", "contextMenus"],
-  "host_permissions": ["https://*/*", "http://*/*"],
+  "description": "AI-powered writing assistant \u2014 fix grammar, rewrite text, and transform your writing directly in any input field.",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "contextMenus",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://*/*",
+    "http://*/*"
+  ],
   "background": {
     "service_worker": "background.js"
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["lib/storage.js", "content.js"],
-      "css": ["content.css"],
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "lib/storage.js",
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
       "run_at": "document_idle"
     }
   ],
@@ -20,15 +35,15 @@
     "default_popup": "popup.html",
     "default_title": "Rewritely",
     "default_icon": {
-      "16": "icon.png",
-      "48": "icon.png",
-      "128": "icon.png"
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
     }
   },
   "icons": {
-    "16": "icon.png",
-    "48": "icon.png",
-    "128": "icon.png"
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
   },
   "commands": {
     "trigger-rewrite": {

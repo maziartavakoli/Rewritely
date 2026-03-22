@@ -1,7 +1,7 @@
 /* Rewritely Floating Action Button & UI */
 
 #bgm-floating-btn {
-  position: absolute;
+  position: fixed;
   z-index: 2147483647;
   width: 32px;
   height: 32px;
@@ -38,28 +38,35 @@
   fill: white;
 }
 
-/* Loading state */
+/* Loading/streaming state — pulses orange while AI is writing */
 #bgm-floating-btn.bgm-loading {
   pointer-events: none;
-  animation: bgm-pulse 1s ease-in-out infinite;
+  animation: bgm-pulse 0.8s ease-in-out infinite;
   background: #e17055;
+  opacity: 1 !important;
+  transform: scale(1) !important;
+}
+
+/* After streaming done — fade out cleanly, no lingering red */
+#bgm-floating-btn:not(.bgm-loading):not(.bgm-visible) {
+  background: #6c5ce7;
 }
 
 @keyframes bgm-pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.15); opacity: 0.7; }
+  0%, 100% { transform: scale(1);    opacity: 1;   }
+  50%       { transform: scale(1.12); opacity: 0.6; }
 }
 
 /* Prompt selector dropdown */
 #bgm-prompt-selector {
-  position: absolute;
+  position: fixed;
   z-index: 2147483647;
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.18);
   padding: 6px 0;
-  min-width: 220px;
-  max-width: 320px;
+  min-width: 280px;
+  max-width: 380px;
   opacity: 0;
   transform: translateY(-4px) scale(0.95);
   transition: opacity 0.12s ease, transform 0.12s ease;
@@ -105,4 +112,21 @@
   height: 1px;
   background: #eee;
   margin: 4px 0;
+}
+
+/* ── Button selected state ── */
+#bgm-floating-btn.bgm-selected {
+  background: #e17055 !important;
+  opacity: 0 !important;
+  transform: scale(0.7) !important;
+  pointer-events: none !important;
+  transition: background 0.1s ease, opacity 0.4s ease 0.2s, transform 0.3s ease !important;
+}
+
+/* ── Toast for non-editable result ── */
+[data-rwly-toast] {
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 24px !important;
+  z-index: 2147483647 !important;
 }

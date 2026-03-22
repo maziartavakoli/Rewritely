@@ -5,61 +5,89 @@
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <!-- Header -->
+
   <div class="header">
     <h1>Rewritely</h1>
     <div class="subtitle">AI Writing Assistant</div>
   </div>
 
-  <!-- Tabs -->
   <div class="tabs">
-    <button class="tab active" data-tab="prompts">Prompts</button>
-    <button class="tab" data-tab="api">API Settings</button>
+    <button class="tab" data-tab="rewrite">✦ Rewrite</button>
+    <button class="tab" data-tab="prompts">Prompts</button>
+    <button class="tab" data-tab="api">API</button>
   </div>
 
-  <!-- Prompts Section -->
-  <div class="section active" id="section-prompts">
-    <div class="flex-between">
-      <label style="margin:0">Your Prompts</label>
-      <button class="btn btn-primary btn-sm" id="btn-add-prompt">+ New</button>
-    </div>
+  <!-- REWRITE TAB (default open) -->
+  <div class="section active" id="section-rewrite">
+    <div class="clipboard-inner">
 
-    <!-- Prompt Editor (hidden by default) -->
-    <div class="prompt-editor" id="prompt-editor">
-      <label>Title</label>
-      <input type="text" id="editor-title" placeholder="e.g. Fix Grammar – Professional">
-      <label>System Prompt</label>
-      <textarea id="editor-system" placeholder="You are a professional editor..."></textarea>
-      <div class="prompt-editor-actions">
-        <button class="btn btn-success btn-sm" id="btn-save-prompt">Save</button>
-        <button class="btn btn-ghost btn-sm" id="btn-cancel-prompt">Cancel</button>
+      <div class="cb-input-wrap">
+        <div class="cb-input-header">
+          <span class="section-label">Your Text</span>
+        </div>
+        <textarea id="cb-input" placeholder="Paste your text here… (Ctrl+V)"></textarea>
       </div>
-    </div>
 
-    <!-- Prompt List -->
-    <div class="prompt-list" id="prompt-list"></div>
+      <div class="cb-prompt-label">Choose a Prompt</div>
+      <div class="cb-prompt-list" id="cb-prompt-list"></div>
+
+      <div class="cb-custom-row">
+        <input type="text" id="cb-custom-input" placeholder="Or type a custom instruction…">
+        <button class="cb-run-custom" id="cb-run-custom" title="Run">↵</button>
+      </div>
+
+      <div class="cb-output-wrap" id="cb-output-wrap">
+        <div class="cb-output-header">
+          <span class="section-label">Result</span>
+          <button class="copy-result-btn" id="btn-copy-result">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy
+          </button>
+        </div>
+        <textarea id="cb-output" readonly placeholder="Result will appear here…"></textarea>
+      </div>
+
+      <div id="cb-status"></div>
+    </div>
   </div>
 
-  <!-- API Settings Section -->
+  <!-- PROMPTS TAB -->
+  <div class="section" id="section-prompts">
+    <div class="prompts-scroll">
+      <div class="prompts-header">
+        <span class="section-label">Saved Prompts</span>
+        <button class="btn-new" id="btn-add-prompt">+ New</button>
+      </div>
+      <div class="prompt-editor" id="prompt-editor">
+        <label>Title</label>
+        <input type="text" id="editor-title" placeholder="e.g. Fix Grammar – Professional">
+        <label>System Prompt</label>
+        <textarea id="editor-system" placeholder="You are a professional editor..."></textarea>
+        <div class="editor-actions">
+          <button class="btn-save" id="btn-save-prompt">Save</button>
+          <button class="btn-cancel" id="btn-cancel-prompt">Cancel</button>
+        </div>
+      </div>
+      <div class="prompt-list" id="prompt-list"></div>
+    </div>
+  </div>
+
+  <!-- API TAB -->
   <div class="section" id="section-api">
-    <label>Base URL</label>
-    <input type="url" id="api-base-url" placeholder="https://api.openai.com/v1">
-
-    <label>API Key</label>
-    <input type="password" id="api-key" placeholder="sk-...">
-
-    <label>Model</label>
-    <input type="text" id="api-model" placeholder="gpt-4o-mini">
-
-    <div class="mt-12">
-      <button class="btn btn-primary btn-block" id="btn-save-api">Save Settings</button>
+    <div class="api-inner">
+      <label class="field-label">Base URL</label>
+      <input type="url" id="api-base-url" placeholder="https://api.openai.com/v1">
+      <label class="field-label">API Key</label>
+      <input type="password" id="api-key" placeholder="sk-...">
+      <label class="field-label">Model</label>
+      <input type="text" id="api-model" placeholder="gpt-4o-mini">
+      <button class="save-api-btn" id="btn-save-api">Save Settings</button>
+      <div id="api-status"></div>
     </div>
-    <div id="api-status"></div>
   </div>
 
-  <!-- Footer -->
   <div class="footer">
-    Select text in any input field &middot; Click the floating icon to rewrite &middot; Alt+R shortcut
+    Select text on any page · Click the floating ✎ icon · Alt+R
   </div>
 
   <script src="lib/storage.js"></script>
