@@ -61,4 +61,4 @@ Users should not submit passwords, secrets, or other highly sensitive informatio
 
 ## Contact
 
-For privacy questions, contact: `YOUR_EMAIL_HERE`
+For privacy questions, contact: `MMMohebi@outlook.com`
