@@ -4,10 +4,8 @@
   "version": "4.0",
   "description": "AI-powered writing assistant \u2014 fix grammar, rewrite text, and transform your writing directly in any input field.",
   "permissions": [
-    "activeTab",
     "storage",
-    "contextMenus",
-    "scripting"
+    "contextMenus"
   ],
   "host_permissions": [
     "https://*/*",

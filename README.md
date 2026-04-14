@@ -111,7 +111,6 @@ For a persistent Firefox build, add `browser_specific_settings.gecko.id` to `man
 
 - `storage`: saves API config and prompts
 - `contextMenus`: adds the right-click rewrite action
-- `activeTab` and `scripting`: supports tab-level integration work
 - host permissions on `http://*/*` and `https://*/*`: allows the extension to run on pages and call configured API endpoints
 
 ## Security Notes
